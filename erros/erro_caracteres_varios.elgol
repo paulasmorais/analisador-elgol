@@ -1,0 +1,12 @@
+inicio .
+
+DECIMAL Lixo .
+
+Lixo = @ .
+Lixo = # .
+Lixo = % .
+Lixo = & .
+Lixo = ? .
+Lixo = ! .
+
+fim .

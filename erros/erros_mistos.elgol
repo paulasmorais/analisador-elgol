@@ -1,0 +1,25 @@
+inicio .
+
+DECIMAL Vim .
+DECIMAL teste .
+DECIMAL LetrA .
+DECIMAL Ateras .
+DECIMAL Teste39 .
+DECIMAL Tes_Te .
+
+Lixo = 034 .
+Teste = 001 .
+Outro = 0 .
+
+$teste .
+$Te .
+$Te34 .
+
+@ .
+# .
+% .
+& .
+? .
+! .
+
+fim .

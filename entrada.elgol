@@ -1,0 +1,15 @@
+inicio .
+
+DECIMAL Lixo .
+DECIMAL Teste .
+DECIMAL Vim .
+DECIMAL LetrA .
+
+Lixo = 34 .
+Teste = 3 EXP 4 .
+Lixo = 034 .
+
+
+@ . 
+
+fim .
