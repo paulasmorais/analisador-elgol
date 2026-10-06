@@ -30,11 +30,11 @@ ElgolLexer lexer = new ElgolLexer(input);
 CommonTokenStream tokenStream = new CommonTokenStream(lexer);
 tokenStream.Fill();
 
-var simbolos = new HashSet<string>();
+var simbolos = new Dictionary<string, (string tipo, int linha)>();
 var erros = new List<(int linha, int coluna, string lexema, string tipo)>();
 
 Console.WriteLine("==============================================");
-Console.WriteLine("                 LISTA DE TOKENS");
+Console.WriteLine("               LISTA DE TOKENS");
 Console.WriteLine("==============================================");
 Console.WriteLine();
 
@@ -125,7 +125,13 @@ foreach (IToken token in tokenStream.GetTokens())
 
     if (nomeToken == "IDENTIFICADOR" || nomeToken == "FUNCAO")
     {
-        simbolos.Add(token.Text);
+        if (!simbolos.ContainsKey(token.Text))
+        {
+            simbolos.Add(
+                token.Text,
+                (nomeToken, token.Line)
+            );
+        }
     }
 }
 
@@ -136,22 +142,25 @@ foreach (IToken token in tokenStream.GetTokens())
 
 Console.WriteLine();
 Console.WriteLine("==============================================");
-Console.WriteLine("              TABELA DE SÍMBOLOS");
+Console.WriteLine("             TABELA DE SÍMBOLOS");
 Console.WriteLine("==============================================");
 Console.WriteLine();
 
 Console.WriteLine(
-    $"{"ID",-8} {"LEXEMA",-25}"
+    $"{"ID",-8} {"TIPO",-20} {"LEXEMA",-20} {"LINHA"}"
 );
 
-Console.WriteLine(new string('-', 40));
+Console.WriteLine(new string('-', 65));
 
 int id = 1;
 
-foreach (string simbolo in simbolos)
+foreach (var simbolo in simbolos)
 {
     Console.WriteLine(
-        $"{id,-8} {simbolo,-25}"
+        $"{id,-8} " +
+        $"{simbolo.Value.tipo,-20} " +
+        $"{simbolo.Key,-20} " +
+        $"{simbolo.Value.linha}"
     );
 
     id++;
@@ -163,7 +172,7 @@ foreach (string simbolo in simbolos)
 
 Console.WriteLine();
 Console.WriteLine("==============================================");
-Console.WriteLine("                 ERROS LÉXICOS");
+Console.WriteLine("                ERROS LÉXICOS");
 Console.WriteLine("==============================================");
 Console.WriteLine();
 
@@ -192,5 +201,5 @@ else
 
 Console.WriteLine();
 Console.WriteLine("==============================================");
-Console.WriteLine("Análise léxica finalizada.");
+Console.WriteLine("         Análise léxica finalizada");
 Console.WriteLine("==============================================");

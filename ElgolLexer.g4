@@ -1,8 +1,7 @@
 lexer grammar ElgolLexer;
 
-// ========================================
-// PALAVRAS RESERVADAS
-// ========================================
+
+// --- PALAVRAS RESERVADAS ---
 
 ELGIO
     : 'elgio'
@@ -80,38 +79,29 @@ MAIOR_IGUAL
     : 'MIgual'
     ;
 
-// ========================================
-// IDENTIFICADORES
-// ========================================
+
+// --- IDENTIFICADORES ---
 
 IDENTIFICADOR
     : ID_VALIDO
     ;
 
 
-
-// ========================================
-// FUNÇÕES
-// ========================================
+// --- FUNÇÕES ---
 
 FUNCAO
     : '$' ID_VALIDO
     ;
 
 
-
-// ========================================
-// NÚMEROS
-// ========================================
+// --- NÚMEROS ---
 
 INTEIRO
     : [1-9] [0-9]*
     ;
 
 
-// ========================================
-// OPERADORES
-// ========================================
+// --- OPERADORES ---
 
 ATRIBUICAO
     : '='
@@ -134,9 +124,7 @@ MULTIPLICACAO
     ;
 
 
-// ========================================
-// DELIMITADORES
-// ========================================
+// --- DELIMITADORES ---
 
 PAREN_ABRE
     : '('
@@ -155,35 +143,46 @@ PONTO
     ;
 
 
-// ========================================
-// COMENTÁRIOS
-// ========================================
+// --- COMENTÁRIOS ---
 
 COMENTARIO
     : '*' ~[\r\n]* -> skip
     ;
 
 
-// ========================================
-// ESPAÇOS E QUEBRAS DE LINHA
-// ========================================
+// --- ESPAÇOS E QUEBRAS DE LINHA ---
 
 ESPACOS
     : [ \t\r\n]+ -> skip
     ;
 
 
-// ========================================
-// LEXEMAS INVÁLIDOS
-// ========================================
+// --- ERROS LEXICOS ---
 
-
-// INTEIRO INVALIDO 
-
+// Inteiro Inválido
+// Números que iniciam com zero
+// Ex: 
+// 0
+// 03
+// 034
 INTEIRO_INVALIDO 
     : '0' [0-9]*
     ;
 
+// Identificador Inválido
+// Ex:
+// Vim
+// teste
+// teste2
+// Teste39
+// Tes_Te
+// LetrA
+// Ateras
+ID_INVALIDO
+    : [A-Za-z0-9_]+
+    ;
+
+// Funções Inválidas
 // Ex:
 // $teste
 // $Te34
@@ -193,41 +192,16 @@ FUNCAO_INVALIDA
     : '$' [A-Za-z0-9_]+
     ;
 
-// Ex:
-// Vim
-// teste
-// teste2
-// Teste39
-// Tes_Te
-// LetrA
-// Ateras
-// 034
-// 0
-ID_INVALIDO
-    : [A-Za-z0-9_]+
-    ;
 
+// --- CARACTERES NÃO RECONHECIDOS ---
 
-
-// ========================================
-// CARACTERES NÃO RECONHECIDOS
-// ========================================
-
-// Ex:
-// @
-// #
-// %
-// &
-// ?
-// !
+// Ex: @, #, %, &, ?, !
 CARACTERE_INVALIDO
     : .
     ;
 
 
-// ========================================
-// FRAGMENTOS AUXILIARES
-// ========================================
+// --- FRAGMENTOS AUXILIARES ---
 
 // Identificador:
 // - começa com consoante maiúscula
