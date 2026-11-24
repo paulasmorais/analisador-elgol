@@ -23,13 +23,14 @@ if (!File.Exists(caminhoArquivo))
 
 string codigo = File.ReadAllText(caminhoArquivo);
 
+// criação do lexer
 ElgolLexer lexer = new ElgolLexer(new AntlrInputStream(codigo));
 
 CommonTokenStream tokenStream = new CommonTokenStream(lexer);
 tokenStream.Fill();
 
-// Tabela de símbolos: identificadores, funções e números.
-// O valor só se aplica a números; _Z_ é registrado com valor 0.
+// tabela de símbolos: identificadores, funções e números
+// o valor só se aplica a números; _Z_ é registrado com valor 0
 var simbolos = new Dictionary<string, (string tipo, int linha, string valor)>();
 var errosLexicos = new List<(int linha, int coluna, string lexema, string tipo)>();
 var errosSintaticos = new List<ErroSintatico>();
@@ -118,12 +119,13 @@ else
 
 Titulo("ERROS SINTÁTICOS");
 
-// Volta o fluxo de tokens para o início
+// volta o fluxo de tokens para o início
 tokenStream.Seek(0);
 
+// criação do parser
 ElgolParser parser = new ElgolParser(tokenStream);
 
-// Troca o tratamento padrão de erros do ANTLR pelo personalizado
+// troca o tratamento padrão de erros do ANTLR pelo personalizado
 parser.RemoveErrorListeners();
 parser.AddErrorListener(new ErroSintaticoListener(errosSintaticos));
 parser.ErrorHandler = new EstrategiaRecuperacaoElgol();
@@ -138,8 +140,8 @@ if (errosSintaticos.Count == 0)
 }
 else
 {
-    // Os erros do parser e os do VerificadorFuncaoListener são coletados
-    // em momentos diferentes; ordenar deixa a saída na ordem do arquivo.
+    // os erros do parser e os do VerificadorFuncaoListener são coletados
+    // em momentos diferentes; ordenar deixa a saída na ordem do arquivo
     foreach (var erro in errosSintaticos.OrderBy(e => e.Linha).ThenBy(e => e.Coluna))
         Console.WriteLine($"Linha {erro.Linha}, coluna {erro.Coluna}: {erro.Mensagem}");
 }
@@ -151,7 +153,7 @@ else
 Titulo("Análise finalizada");
 
 
-// Imprime um cabeçalho de seção centralizado
+// imprime um cabeçalho de seção centralizado
 static void Titulo(string texto)
 {
     const int largura = 45;
@@ -202,7 +204,7 @@ public class VerificadorFuncaoListener(List<ErroSintatico> erros) : ElgolParserB
         erros.Add(new ErroSintatico(t.Line, t.Column + 1, msg));
 
     // 'nomeFuncao' só existe dentro de 'declaracaoFuncao'; se o nome
-    // veio como IDENTIFICADOR, faltou o '$'.
+    // veio como IDENTIFICADOR, faltou o '$'
     public override void ExitNomeFuncao(ElgolParser.NomeFuncaoContext context)
     {
         if (context.IDENTIFICADOR() != null)
@@ -215,8 +217,8 @@ public class VerificadorFuncaoListener(List<ErroSintatico> erros) : ElgolParserB
             Erro(context.Start, "bloco de função deve começar com 'inicio.'.");
     }
 
-    // Comando no nível mais externo: a gramática aceita só para não
-    // "perder" o resto do arquivo; aqui ele vira erro.
+    // comando no nível mais externo: a gramática aceita só para não
+    // "perder" o resto do arquivo; aqui ele vira erro
     public override void ExitUnidade(ElgolParser.UnidadeContext context)
     {
         if (context.comando() != null)
@@ -233,32 +235,24 @@ public class VerificadorFuncaoListener(List<ErroSintatico> erros) : ElgolParserB
 
 public class EstrategiaRecuperacaoElgol : DefaultErrorStrategy
 {
-    // Palavras reservadas, para avisar quando aparecem com maiúsculas/minúsculas erradas
-    // (ex.: "Decimal" em vez de "DECIMAL").
+    // palavras reservadas, para avisar quando aparecem com maiúsculas/minúsculas erradas
     private static readonly string[] PalavrasReservadas =
         ["DECIMAL", "inicio", "fim", "se", "entao", "senao", "enquanto", "para", "elgio"];
 
-    // -------------------------------------------------------------
-    // 1) RECUPERAÇÃO "ATÉ O FIM DA LINHA"
-    //
-    // A recuperação padrão do ANTLR descarta tokens até achar qualquer
-    // token que possa vir a seguir — inclusive um IDENTIFICADOR no meio
-    // da linha — e gera erros falsos em cascata. Como em Elgol cada
-    // comando ocupa uma linha, é mais seguro descartar o resto da linha.
-    // -------------------------------------------------------------
+
+    // a recuperação padrão do ANTLR descarta tokens até achar qualquertoken que possa vir a seguir
+    // e gera erros falsos em cascata
     public override void Recover(Parser recognizer, RecognitionException e)
     {
         ITokenStream tokens = recognizer.TokenStream;
         IToken anterior = tokens.LT(-1);
 
-        // Erro no primeiro token da linha: a recuperação padrão funciona bem aqui.
         if (anterior == null || anterior.Type == ElgolParser.NOVA_LINHA)
         {
             base.Recover(recognizer, e);
             return;
         }
 
-        // Mesma proteção contra laço infinito que o ANTLR usa.
         if (lastErrorIndex == tokens.Index && lastErrorStates?.Contains(recognizer.State) == true)
             recognizer.Consume();
 
@@ -266,18 +260,12 @@ public class EstrategiaRecuperacaoElgol : DefaultErrorStrategy
         lastErrorStates ??= new IntervalSet();
         lastErrorStates.Add(recognizer.State);
 
-        // Descarta até a quebra de linha (ela NÃO é consumida, para que
-        // as regras de cima consigam fechar o comando normalmente).
         while (tokens.LA(1) != ElgolParser.NOVA_LINHA && tokens.LA(1) != TokenConstants.EOF)
             recognizer.Consume();
     }
 
-    // -------------------------------------------------------------
-    // 2) A REGRA INICIAL NUNCA DESISTE
-    //
-    // Na regra inicial, uma exceção faria o ANTLR descartar tudo até
-    // o EOF. Aqui, em vez disso, informamos e pulamos até um ponto seguro.
-    // -------------------------------------------------------------
+    // na regra inicial, uma exceção faria o ANTLR descartar tudo até o EOF
+    //  informamos e pulamos até um ponto seguro
     public override void Sync(Parser recognizer)
     {
         try
@@ -291,10 +279,7 @@ public class EstrategiaRecuperacaoElgol : DefaultErrorStrategy
         }
     }
 
-    // -------------------------------------------------------------
-    // 3) CASO ESPECIAL: faltou 'inicio' mas veio "<outra coisa> ."
-    //    (ex.: 'entao.' depois de 'enquanto')
-    // -------------------------------------------------------------
+    // CASO ESPECIAL: faltou 'inicio' mas veio "<outra coisa> ."
     public override IToken RecoverInline(Parser recognizer)
     {
         if (!recognizer.GetExpectedTokens().Contains(ElgolParser.INICIO) ||
@@ -306,14 +291,13 @@ public class EstrategiaRecuperacaoElgol : DefaultErrorStrategy
         IToken tokenEncontrado = recognizer.CurrentToken;
         IToken tokenAusente = GetMissingSymbol(recognizer);
 
-        // Não reporta enquanto ainda está se recuperando de um erro anterior.
+        // não reporta enquanto ainda está se recuperando de um erro anterior
         if (!InErrorRecoveryMode(recognizer))
             recognizer.NotifyErrorListeners(
                 tokenEncontrado,
                 $"esperado 'inicio.', mas foi encontrado '{tokenEncontrado.Text}'.",
                 null);
 
-        // Descarta somente o token incorreto; o PONTO continua disponível.
         BeginErrorCondition(recognizer);
         recognizer.Consume();
         EndErrorCondition(recognizer);
@@ -321,9 +305,7 @@ public class EstrategiaRecuperacaoElgol : DefaultErrorStrategy
         return tokenAusente;
     }
 
-    // -------------------------------------------------------------
-    // 4) MENSAGENS EM PORTUGUÊS
-    // -------------------------------------------------------------
+    // MENSAGENS EM PORTUGUÊS
 
     // "missing X at Y"  (o ANTLR inseriu um token que faltava)
     protected override void ReportMissingToken(Parser recognizer)
@@ -393,15 +375,15 @@ public class EstrategiaRecuperacaoElgol : DefaultErrorStrategy
 
     // ---------------- auxiliares ----------------
 
-    // Usa a mensagem mais específica disponível; senão, a padrão.
+    // usa a mensagem mais específica disponível
+    // senão usa a padrão
     private static void Notificar(Parser recognizer, IToken t, RecognitionException? e, string padrao)
     {
         string msg = MensagemOperando(recognizer, t) ?? DicaPalavraReservada(t) ?? padrao;
         recognizer.NotifyErrorListeners(t, msg, e);
     }
 
-    // Erros onde se esperava um operando. Vale para os três tipos de erro
-    // do ANTLR, porque ele pode reportar o mesmo problema de jeitos diferentes.
+    // erros onde se esperava um operando
     private static string? MensagemOperando(Parser recognizer, IToken t)
     {
         bool emOperandoSimples = recognizer.Context is ElgolParser.OperandoSimplesContext;
