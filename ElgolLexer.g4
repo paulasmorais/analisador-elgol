@@ -76,7 +76,7 @@ MENOR_IGUAL
     ;
 
 MAIOR_IGUAL
-    : 'MIgual'
+    : 'Migual'
     ;
 
 
@@ -152,8 +152,12 @@ COMENTARIO
 
 // --- ESPAÇOS E QUEBRAS DE LINHA ---
 
+NOVA_LINHA 
+    : '\r'? '\n' | '\r'
+    ;
+
 ESPACOS
-    : [ \t\r\n]+ -> skip
+    : [ \t]+ -> skip
     ;
 
 
@@ -179,7 +183,7 @@ INTEIRO_INVALIDO
 // LetrA
 // Ateras
 ID_INVALIDO
-    : [A-Za-z0-9_]+
+    : [A-Za-z0-9_\u00C0-\u00FF]+
     ;
 
 // Funções Inválidas
@@ -189,7 +193,7 @@ ID_INVALIDO
 // $Teste39
 // $Te
 FUNCAO_INVALIDA
-    : '$' [A-Za-z0-9_]+
+    : '$' [A-Za-z0-9_\u00C0-\u00FF]+
     ;
 
 
