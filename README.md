@@ -1,6 +1,6 @@
-# Analisador Léxico Elgol
+# Analisador Léxico e Sintático Elgol
 
-Analisador léxico da linguagem **Elgol**, desenvolvido utilizando **ANTLR 4** e **C#**.
+Analisador léxico e sintático da linguagem **Elgol**, desenvolvido utilizando **ANTLR 4** e **C#**.
 
 ## Pré-requisitos
 
@@ -27,8 +27,8 @@ cd analisador-elgol
 dotnet run
 ```
 
-4. Insira um código na linguagem **Elgol** para que o analisador realize a análise léxica e apresente os tokens reconhecidos e os erros léxicos encontrados.
+4. Insira um código na linguagem **Elgol** para que o analisador realize a análise léxica e sintática, apresente os tokens reconhecidos, os erros léxicos e erros sintáticos encontrados.
 
 ## Observação
 
-Os arquivos necessários para a execução do analisador léxico já estão incluídos no repositório. **Não é necessário gerar novamente o analisador utilizando o ANTLR.**
+Os arquivos necessários para a execução do analisador léxico e sintático já estão incluídos no repositório. **Não é necessário gerar novamente o analisador utilizando o ANTLR.**
